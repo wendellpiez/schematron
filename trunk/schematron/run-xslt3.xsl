@@ -6,12 +6,15 @@
     version="3.0">
     
     
-    <!-- Runs a pipeline of three transformations - the standard Schematron pipeline
-        delivering SVRL
-        -->
     <!-- 
-        An executable transformation is dynamically produced by running a Schematron
-        through these transformations in sequence
+        
+    Schematron application shell
+      (flag -s) -s (--source) your XML document to be validated
+      (parameter 'schematron') schematron=file.sch nominating the Schematron at location 'file.sch'
+        relative to the input document
+      
+    To apply the Schematron, an executable transformation is dynamically produced
+      from the input Schematron (source) by applying these transformations in sequence
     # code/iso_dsdl_include.xsl
     # code/iso_abstract_expand.xsl
     # code/iso_svrl_for_xslt2.xsl
@@ -28,18 +31,12 @@
     
     <xsl:param name="schematron" as="xs:string"/>
     <xsl:param name="schematron-in">
-        <xsl:try select="document($schematron)">
-            <xsl:catch expand-text="true"> No Schematron found at { $document }</xsl:catch>
+        <xsl:try select="document($schematron,/)">
+            <xsl:catch expand-text="true"> No Schematron found at { $schematron }</xsl:catch>
         </xsl:try>
     </xsl:param>
     
     <xsl:param name="louder" as="xs:string">quieter</xsl:param>
-    
-    <xsl:variable name="schematron-pipeline">
-        <nm:transform version="2.0">code/iso_dsdl_include.xsl</nm:transform>
-        <nm:transform version="2.0">code/iso_abstract_expand.xsl</nm:transform>
-        <nm:transform version="2.0">code/iso_svrl_for_xslt2.xsl</nm:transform>
-    </xsl:variable>
     
     <xsl:template match="/" name="apply-schematron">
         <xsl:param name="validate-me" as="document-node()" select="$document"/>
@@ -68,6 +65,11 @@
         <xsl:param name="source"   as="document-node()"  select="$schematron-in"/>
         <!-- Each element inside $schematron pipeline is processed in turn.
              The result of each processing step is passed to the next step as its input, until no steps are left. -->
+        <xsl:variable name="schematron-pipeline">
+            <nm:transform version="2.0">code/iso_dsdl_include.xsl</nm:transform>
+            <nm:transform version="2.0">code/iso_abstract_expand.xsl</nm:transform>
+            <nm:transform version="2.0">code/iso_svrl_for_xslt2.xsl</nm:transform>
+        </xsl:variable>
         <xsl:iterate select="$schematron-pipeline/*">
             <xsl:param name="doc" select="$source" as="document-node()"/>
             <xsl:on-completion select="$doc"/>
@@ -188,7 +190,7 @@
             <xsl:otherwise>#ALL</xsl:otherwise>
         </xsl:choose>
     </xsl:param>
-    <xsl:param name="allow-foreign">false</xsl:param>
+    <xsl:param name="allow-foreign">true</xsl:param>
     <xsl:param name="generate-paths">true</xsl:param>
     <xsl:param name="generate-fired-rule">true</xsl:param>
     <xsl:param name="optimize" />
