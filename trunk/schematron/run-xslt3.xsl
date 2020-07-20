@@ -41,7 +41,7 @@
     
     <xsl:template match="/" name="apply-schematron">
         <xsl:param name="validate-me" as="document-node()" select="$document"/>
-        <xsl:variable name="xslt-locate" select="document-uri($schematron-in) || '.xsl'"/><!-- nominal location for generated XSLT -->
+        <xsl:variable name="xslt-locate" select="document-uri($schematron-in) => replace('\.sch$','-sch.xsl')"/><!-- nominal location for generated XSLT -->
         <xsl:variable name="validation-params" as="map(xs:QName,item()*)?"/><!-- no params set outside globals (see below) -->
         <xsl:variable name="runtime" as="map(xs:string, item())">
             <xsl:map>
