@@ -9,7 +9,8 @@
     <!-- 
         
     Schematron application shell
-      (flag -s) -s (--source) your XML document to be validated
+      (flag -s) your XML document to be validated
+      (flag -xsl) this XSLT transformation
       (parameter 'schematron') schematron=file.sch nominating the Schematron at location 'file.sch'
         relative to the input document
       
@@ -40,11 +41,12 @@
     
     <xsl:template match="/" name="apply-schematron">
         <xsl:param name="validate-me" as="document-node()" select="$document"/>
-        <xsl:variable name="xslt-spec" select="'compiled-schematron.xsl'"/><!-- nominal location for generated XSLT -->
+        <xsl:variable name="xslt-locate" select="document-uri($schematron-in) || '.xsl'"/><!-- nominal location for generated XSLT -->
         <xsl:variable name="validation-params" as="map(xs:QName,item()*)?"/><!-- no params set outside globals (see below) -->
         <xsl:variable name="runtime" as="map(xs:string, item())">
             <xsl:map>
                 <xsl:map-entry key="'xslt-version'"        select="3.0"/>
+                <xsl:map-entry key="'stylesheet-location'" select="$xslt-locate"/>
                 <xsl:map-entry key="'stylesheet-node'">
                     <xsl:call-template name="produce-schematron"/>
                 </xsl:map-entry>
@@ -92,7 +94,7 @@
         <xsl:variable name="runtime" as="map(xs:string, item())">
             <xsl:map>
                 <xsl:map-entry key="'xslt-version'"        select="xs:decimal($xslt-spec/@version)"/>
-                <xsl:map-entry key="'stylesheet-location'" select=" resolve-uri(string($xslt-spec),$xslt-base)"/>
+                <xsl:map-entry key="'stylesheet-location'" select="resolve-uri(string($xslt-spec),$xslt-base)"/>
                 <xsl:map-entry key="'source-node'"         select="$sourcedoc"/>
                 <xsl:map-entry key="'stylesheet-params'"   select="$runtime-params"/>
             </xsl:map>
@@ -144,19 +146,19 @@
     <xsl:template mode="nm:runtime-parameters"
         match="nm:transform[. = 'code/iso_svrl_for_xslt2.xsl']" as="map(xs:QName,item()*)">
         <xsl:map>
-            <xsl:map-entry key="QName('', 'diagnose')" select="$diagnose"/>
-            <xsl:map-entry key="QName('', 'property')" select="$property"/>
-            <xsl:map-entry key="QName('', 'phase')" select="$phase"/>
-            <xsl:map-entry key="QName('', 'allow-foreign')" select="$allow-foreign"/>
-            <xsl:map-entry key="QName('', 'generate-paths')" select="$generate-paths"/>
+            <xsl:map-entry key="QName('', 'diagnose')"            select="$diagnose"/>
+            <xsl:map-entry key="QName('', 'property')"            select="$property"/>
+            <xsl:map-entry key="QName('', 'phase')"               select="$phase"/>
+            <xsl:map-entry key="QName('', 'allow-foreign')"       select="$allow-foreign"/>
+            <xsl:map-entry key="QName('', 'generate-paths')"      select="$generate-paths"/>
             <xsl:map-entry key="QName('', 'generate-fired-rule')" select="$generate-fired-rule"/>
-            <xsl:map-entry key="QName('', 'optimize')" select="$optimize"/>
-            <xsl:map-entry key="QName('', 'sch.exslt.imports')" select="$sch.exslt.imports"/>
-            <xsl:map-entry key="QName('', 'terminate')" select="$terminate"/>
-            <xsl:map-entry key="QName('', 'langCode')" select="$langCode"/>
-            <xsl:map-entry key="QName('', 'output-encoding')" select="$output-encoding"/>
-            <xsl:map-entry key="QName('', 'full-path-notation')" select="$full-path-notation"/>
-            <xsl:map-entry key="QName('', 'include-schematron')" select="$include-schematron"/>
+            <xsl:map-entry key="QName('', 'optimize')"            select="$optimize"/>
+            <xsl:map-entry key="QName('', 'sch.exslt.imports')"   select="$sch.exslt.imports"/>
+            <xsl:map-entry key="QName('', 'terminate')"           select="$terminate"/>
+            <xsl:map-entry key="QName('', 'langCode')"            select="$langCode"/>
+            <xsl:map-entry key="QName('', 'output-encoding')"     select="$output-encoding"/>
+            <xsl:map-entry key="QName('', 'full-path-notation')"  select="$full-path-notation"/>
+            <xsl:map-entry key="QName('', 'include-schematron')"  select="$include-schematron"/>
         </xsl:map>
     </xsl:template>
     
@@ -164,11 +166,11 @@
     <!--iso_dsdl_include.xsl-->
     
     <xsl:param name="include-schematron">true</xsl:param>
-    <xsl:param name="include-crdl">true</xsl:param>
-    <xsl:param name="include-xinclude">true</xsl:param>
-    <xsl:param name="include-dtll">true</xsl:param>
-    <xsl:param name="include-relaxng">true</xsl:param>
-    <xsl:param name="include-xlink">true</xsl:param>
+    <xsl:param name="include-crdl"      >true</xsl:param>
+    <xsl:param name="include-xinclude"  >true</xsl:param>
+    <xsl:param name="include-dtll"      >true</xsl:param>
+    <xsl:param name="include-relaxng"   >true</xsl:param>
+    <xsl:param name="include-xlink"     >true</xsl:param>
     
     <!--iso_abstract_expand.xsl-->
     
@@ -190,14 +192,14 @@
             <xsl:otherwise>#ALL</xsl:otherwise>
         </xsl:choose>
     </xsl:param>
-    <xsl:param name="allow-foreign">true</xsl:param>
-    <xsl:param name="generate-paths">true</xsl:param>
+    <xsl:param name="allow-foreign"      >true</xsl:param>
+    <xsl:param name="generate-paths"     >true</xsl:param>
     <xsl:param name="generate-fired-rule">true</xsl:param>
     <xsl:param name="optimize" />
     <!-- e.g. saxon file.xml file.xsl "sch.exslt.imports=.../string.xsl;.../math.xsl" -->
     <xsl:param name="sch.exslt.imports" />
     
-    <xsl:param name="terminate" >false</xsl:param>
+    <xsl:param name="terminate">false</xsl:param>
     
     <!-- Set the language code for messages -->
     <xsl:param name="langCode">default</xsl:param>
