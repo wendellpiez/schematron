@@ -48,7 +48,7 @@
                 <xsl:map-entry key="'xslt-version'"        select="3.0"/>
                 <xsl:map-entry key="'stylesheet-location'" select="$xslt-locate"/>
                 <xsl:map-entry key="'stylesheet-node'">
-                    <xsl:call-template name="produce-schematron"/>
+                    <xsl:call-template name="produce-schematron-xslt"/>
                 </xsl:map-entry>
                 <xsl:map-entry key="'source-node'"         select="$validate-me"/>
             </xsl:map>
