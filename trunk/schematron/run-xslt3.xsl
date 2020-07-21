@@ -63,7 +63,7 @@
         
     </xsl:template>
     
-    <xsl:template name="produce-schematron" as="document-node()">
+    <xsl:template name="produce-schematron-xslt" as="document-node()">
         <xsl:param name="source"   as="document-node()"  select="$schematron-in"/>
         <!-- Each element inside $schematron pipeline is processed in turn.
              The result of each processing step is passed to the next step as its input, until no steps are left. -->
